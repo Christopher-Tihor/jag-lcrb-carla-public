@@ -35,7 +35,7 @@ export class EventComponent extends FormBase implements OnInit {
   validationMessages: string[];
   previewCities: AutoCompleteItem[] = [];
   autocompleteCities: AutoCompleteItem[] = [];
-  isPacificTimeZone: boolean = true;
+  isPacificTimeZone: boolean;
   isOpen: boolean[][] = [];
   get minDate() {
     return new Date();
@@ -86,7 +86,7 @@ export class EventComponent extends FormBase implements OnInit {
   }
 
   ngOnInit(): void {
-
+    this.isPacificTimeZone = true;
     // create a form for the basic details
     this.form = this.fb.group({
       sepCity: ["", [Validators.required, Validators.minLength(2)]],
@@ -122,7 +122,9 @@ export class EventComponent extends FormBase implements OnInit {
           }
         });
   }
-
+  checkTimeZone() {
+    this.isPacificTimeZone = !this.isPacificTimeZone;
+  }
   setFormValue(app: SepApplication) {
     // if there's an app
     if (app) {
@@ -270,11 +272,10 @@ export class EventComponent extends FormBase implements OnInit {
       serviceStartValue: ["9:00 AM", [Validators.required]],
       serviceEndValue: ["9:30 PM", [Validators.required]],
       liquorServiceHoursExtensionReason: [""],
-      disturbancePreventionMeasuresDetails: [""],
-      isPacificTimeZone: [this.isPacificTimeZone]
+      disturbancePreventionMeasuresDetails: [""]
     }, { validators: eventTimesValidator });
 
-    eventDate = Object.assign(new SepSchedule(null, this.isPacificTimeZone), eventDate);
+    eventDate = Object.assign(new SepSchedule(null), eventDate);
     const val = eventDate.toEventFormValue();
 
     // Set default to event start date
@@ -282,14 +283,9 @@ export class EventComponent extends FormBase implements OnInit {
       val.eventDate = this?.sepApplication?.eventStartDate;     
     }
     datesForm.patchValue(val);
-
-    datesForm.get('isPacificTimeZone').valueChanges.subscribe(value => {
-      this.isPacificTimeZone = value;
-    });
-
     return datesForm;
   }
-  
+
   getIsOpen(locationIndex: number, eventIndex: number): boolean {
     if(this.isOpen[locationIndex] === undefined) {
       return true;
@@ -454,7 +450,7 @@ export class EventComponent extends FormBase implements OnInit {
     formData?.eventLocations.forEach(location => {
       const dateValues = [];
       location?.eventDates.forEach(sched => {
-        dateValues.push(new SepSchedule(sched, this.isPacificTimeZone));
+        dateValues.push(new SepSchedule(sched));
       });
       location.eventDates = dateValues;
     });
@@ -510,4 +506,5 @@ export class EventComponent extends FormBase implements OnInit {
       this.showValidationMessages = true;
     }
   }
+
 }
